@@ -2,6 +2,8 @@ import streamlit as st
 import requests
 import pandas as pd
 from datetime import datetime
+from pathlib import Path
+from image_download import PosterManager
 
 st.set_page_config(
     page_title="MyTflix",
@@ -175,6 +177,11 @@ tabs = st.tabs([
     "Profil Utilisateur"
 ])
 
+# Initialize poster cache
+PosterManager.init()
+
+PLACEHOLDER = "https://via.placeholder.com/300x450?text=No+Poster"
+
 with tabs[0]:
     st.markdown("## Recommandations Personnalisees")
     
@@ -194,14 +201,20 @@ with tabs[0]:
             if response.status_code == 200:
                 movies = response.json()
                 if movies:
-                    for movie in movies:
-                        st.markdown(f"""
-                        <div class="movie-card">
-                            <div class="movie-title">{movie['title']}</div>
-                            <div class="movie-genres">{movie['genres']}</div>
-                            <div class="movie-rating">★ {movie.get('avg_rating', 'N/A')} ({movie.get('rating_count', 0)} votes)</div>
-                        </div>
-                        """, unsafe_allow_html=True)
+                    cols = st.columns(4)
+                    for i, movie in enumerate(movies):
+                        col = cols[i % 4]
+                        with col:
+                            poster = PosterManager.get_or_download_poster(movie.get('title', ''), int(movie.get('movieId', 0)))
+                            img_src = poster if poster else PLACEHOLDER
+                            st.image(img_src, use_column_width=True)
+                            st.markdown(f"""
+                            <div style='padding-top:6px;'>
+                                <div style='font-weight:700;color:#fff'>{movie['title']}</div>
+                                <div style='color:#f5a623;font-size:12px'>{movie['genres']}</div>
+                                <div style='color:#00d084;font-weight:600'>★ {movie.get('avg_rating', 'N/A')} ({movie.get('rating_count', 0)} votes)</div>
+                            </div>
+                            """, unsafe_allow_html=True)
                 else:
                     st.info("Aucune recommandation disponible")
             else:
@@ -218,14 +231,20 @@ with tabs[1]:
         response = requests.get(f"{API_BASE_URL}/top-films?n={n_top}", timeout=10)
         if response.status_code == 200:
             movies = response.json()
-            for i, movie in enumerate(movies, 1):
-                st.markdown(f"""
-                <div class="movie-card">
-                    <div class="movie-title">{i}. {movie['title']}</div>
-                    <div class="movie-genres">{movie['genres']}</div>
-                    <div class="movie-rating">★ {movie.get('avg_rating', 'N/A')}/5 ({movie.get('rating_count', 0)} votes)</div>
-                </div>
-                """, unsafe_allow_html=True)
+            cols = st.columns(4)
+            for i, movie in enumerate(movies):
+                col = cols[i % 4]
+                with col:
+                    poster = PosterManager.get_or_download_poster(movie.get('title', ''), int(movie.get('movieId', 0)))
+                    img_src = poster if poster else PLACEHOLDER
+                    st.image(img_src, use_column_width=True)
+                    st.markdown(f"""
+                    <div style='padding-top:6px;'>
+                        <div style='font-weight:700;color:#fff'>{i+1}. {movie['title']}</div>
+                        <div style='color:#f5a623;font-size:12px'>{movie['genres']}</div>
+                        <div style='color:#00d084;font-weight:600'>★ {movie.get('avg_rating', 'N/A')}/5 ({movie.get('rating_count', 0)} votes)</div>
+                    </div>
+                    """, unsafe_allow_html=True)
     except Exception as e:
         st.error(f"Erreur: {str(e)}")
 
@@ -246,14 +265,20 @@ with tabs[2]:
             )
             if response.status_code == 200:
                 movies = response.json()
-                for movie in movies:
-                    st.markdown(f"""
-                    <div class="movie-card">
-                        <div class="movie-title">{movie['title']}</div>
-                        <div class="movie-genres">{movie['genres']}</div>
-                        <div class="movie-rating">★ {movie.get('avg_rating', 'N/A')}</div>
-                    </div>
-                    """, unsafe_allow_html=True)
+                cols = st.columns(4)
+                for i, movie in enumerate(movies):
+                    col = cols[i % 4]
+                    with col:
+                        poster = PosterManager.get_or_download_poster(movie.get('title', ''), int(movie.get('movieId', 0)))
+                        img_src = poster if poster else PLACEHOLDER
+                        st.image(img_src, use_column_width=True)
+                        st.markdown(f"""
+                        <div style='padding-top:6px;'>
+                            <div style='font-weight:700;color:#fff'>{movie['title']}</div>
+                            <div style='color:#f5a623;font-size:12px'>{movie['genres']}</div>
+                            <div style='color:#00d084;font-weight:600'>★ {movie.get('avg_rating', 'N/A')}</div>
+                        </div>
+                        """, unsafe_allow_html=True)
     except Exception as e:
         st.error(f"Erreur: {str(e)}")
 
@@ -306,13 +331,15 @@ with tabs[4]:
                 
                 if movies:
                     st.subheader(f"Films evalues par l'utilisateur {user_id}")
-                    
-                    for movie in movies:
-                        col1, col2 = st.columns([4, 1])
-                        with col1:
+                    cols = st.columns(3)
+                    for i, movie in enumerate(movies):
+                        col = cols[i % 3]
+                        with col:
+                            poster = PosterManager.get_or_download_poster(movie.get('title', ''), int(movie.get('movieId', 0)))
+                            img_src = poster if poster else PLACEHOLDER
+                            st.image(img_src, use_column_width=True)
                             st.write(f"**{movie['title']}**")
                             st.caption(movie['genres'])
-                        with col2:
                             st.metric("Note", f"{movie.get('avg_rating', 'N/A')}/5")
                 else:
                     st.info("Cet utilisateur n'a pas d'evaluations")

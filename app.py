@@ -14,11 +14,14 @@ from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import TfidfVectorizer
 import uvicorn
 
+# Base directory for safe path resolution (useful for deployments)
+BASE_DIR = Path(__file__).resolve().parent
+
 class MovieRecommender:
     def __init__(self):
-        self.movies = pd.read_csv('movies.csv')
-        self.ratings = pd.read_csv('ratings.csv')
-        self.tags = pd.read_csv('tags.csv')
+        self.movies = pd.read_csv(BASE_DIR / 'movies.csv')
+        self.ratings = pd.read_csv(BASE_DIR / 'ratings.csv')
+        self.tags = pd.read_csv(BASE_DIR / 'tags.csv')
         self.similarity_matrix = None
         self.tfidf_matrix = None
         self.tfidf_vectorizer = None

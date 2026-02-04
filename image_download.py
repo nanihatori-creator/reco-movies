@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 
 class PosterManager:
-    TMDB_API_KEY = os.getenv('TMDB_API_KEY', '')
+    TMDB_API_KEY = os.getenv('TMDB_API_KEY', 'e5c934fe24429749beb4d1f4724bb2ee')
     POSTER_DIR = 'posters'
     
     @classmethod
