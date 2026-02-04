@@ -21,3 +21,4 @@ venv/
 .coverage
 htmlcov/
 .ipynb_checkpoints/
+*.csv
