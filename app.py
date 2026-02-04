@@ -141,26 +141,16 @@ recommender = None
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global recommender
-    print("\n🚀 Démarrage de MyTflix API...")
-    print("📚 Chargement du modèle ML...")
-    
-    model_path = 'recommender_model.pkl'
-    
-    if not Path(model_path).exists():
-        print("🔄 Entraînement du modèle (première utilisation)...")
-        recommender = MovieRecommender()
-        recommender.train()
-        recommender.save(model_path)
-        print("✅ Modèle entraîné et sauvegardé!")
-    else:
-        recommender = MovieRecommender.load(model_path)
-        print("✅ Modèle chargé depuis le fichier!")
-    
-    print("✅ API prête à recevoir des requêtes\n")
+    print("\n Démarrage de MyTflix API...")
+    print(" Chargement du modèle ML...")
+    recommender = MovieRecommender()
+    recommender.train()
+    print(" Modèle entraîné et prêt!")
+    print(" API prête à recevoir des requêtes\n")
     
     yield
     
-    print("\n🛑 Arrêt de l'API MyTflix...")
+    print("\n Arrêt de l'API MyTflix...")
 
 app = FastAPI(
     title="MyTflix API",
@@ -298,7 +288,7 @@ async def read_root():
                     <div class="method">GET</div> /recommend/{movie_title} - Recommandations par titre
                 </div>
                 
-                <a href="/docs" class="docs-link">📚 Documentation complète (Swagger)</a>
+                <a href="/docs" class="docs-link">Documentation complète (Swagger)</a>
             </div>
         </div>
     </body>
@@ -478,4 +468,4 @@ async def recommend_by_title(movie_title: str, n: int = 10):
         raise HTTPException(status_code=400, detail=str(e))
 
 if __name__ == '__main__':
-    uvicorn.run(app, host='0.0.0.0', port=8000)
+    uvicorn.run('app:app', host='0.0.0.0', port=8000, reload=True)
